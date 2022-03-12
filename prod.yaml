@@ -1,0 +1,97 @@
+version: "2.4"
+
+services:
+  odoo:
+    extends:
+      file: common.yaml
+      service: odoo
+    restart: unless-stopped
+    env_file:
+      - .docker/odoo.env
+      - .docker/db-access.env
+    environment:
+      DB_FILTER: "^prod"
+      DOODBA_ENVIRONMENT: "${DOODBA_ENVIRONMENT-prod}"
+      INITIAL_LANG: "en_US"
+    depends_on:
+      - db
+    networks:
+      default:
+      inverseproxy_shared:
+    labels:
+      doodba.domain.main: "prod.docker.localhost"
+      traefik.enable: "true"
+      traefik.domain: "prod.docker.localhost"
+      traefik.forbiddenCrawlers-0.frontend.headers.customResponseHeaders:
+        "X-Robots-Tag:noindex, nofollow"
+      traefik.forbiddenCrawlers-0.frontend.rule: Host:prod.docker.localhost;Path:/web,/web/{anything:.*},/website/info,/website/info/{anything:.*}
+      traefik.main-0.frontend.rule: Host:prod.docker.localhost
+      traefik.longpolling-0.frontend.rule: Host:prod.docker.localhost;Path:/longpolling/{anything:.*}
+      traefik.longpolling-0.port: 8072
+      ? traefik.http.middlewares.myproject-odoo-12-0-prod-buffering.buffering.retryExpression
+      : IsNetworkError() && Attempts() < 5
+      traefik.http.middlewares.myproject-odoo-12-0-prod-compress.compress: "true"
+      ? traefik.http.middlewares.myproject-odoo-12-0-prod-forbid-crawlers.headers.customResponseHeaders.X-Robots-Tag
+      : "noindex, nofollow"
+      traefik.http.middlewares.myproject-odoo-12-0-prod-forceSecure.headers.forceSTSHeader: "true"
+      traefik.http.middlewares.myproject-odoo-12-0-prod-forceSecure.headers.sslRedirect: "true"
+      traefik.http.services.myproject-odoo-12-0-prod-main.loadbalancer.server.port: 8069
+      traefik.http.services.myproject-odoo-12-0-prod-longpolling.loadbalancer.server.port: 8072
+      traefik.http.routers.myproject-odoo-12-0-prod-main-0.rule: Host(`prod.docker.localhost`)
+      traefik.http.routers.myproject-odoo-12-0-prod-main-0.service: myproject-odoo-12-0-prod-main
+      traefik.http.routers.myproject-odoo-12-0-prod-main-0.middlewares:
+        myproject-odoo-12-0-prod-buffering, myproject-odoo-12-0-prod-compress,
+        myproject-odoo-12-0-prod-forceSecure
+      traefik.http.routers.myproject-odoo-12-0-prod-main-secure-0.rule: Host(`prod.docker.localhost`)
+      traefik.http.routers.myproject-odoo-12-0-prod-main-secure-0.service: myproject-odoo-12-0-prod-main
+      traefik.http.routers.myproject-odoo-12-0-prod-main-secure-0.middlewares:
+        myproject-odoo-12-0-prod-buffering, myproject-odoo-12-0-prod-compress,
+        myproject-odoo-12-0-prod-forceSecure
+      traefik.http.routers.myproject-odoo-12-0-prod-main-secure-0.tls: "true"
+      traefik.http.routers.myproject-odoo-12-0-prod-main-secure-0.tls.certResolver: letsencrypt
+      traefik.http.routers.myproject-odoo-12-0-prod-longpolling-0.rule:
+        Host(`prod.docker.localhost`) && PathPrefix(`/longpolling/`)
+      traefik.http.routers.myproject-odoo-12-0-prod-longpolling-0.service: myproject-odoo-12-0-prod-longpolling
+      traefik.http.routers.myproject-odoo-12-0-prod-longpolling-0.middlewares: myproject-odoo-12-0-prod-forceSecure
+      traefik.http.routers.myproject-odoo-12-0-prod-longpolling-secure-0.rule:
+        Host(`prod.docker.localhost`) && PathPrefix(`/longpolling/`)
+      traefik.http.routers.myproject-odoo-12-0-prod-longpolling-secure-0.service: myproject-odoo-12-0-prod-longpolling
+      traefik.http.routers.myproject-odoo-12-0-prod-longpolling-secure-0.middlewares: myproject-odoo-12-0-prod-forceSecure
+      traefik.http.routers.myproject-odoo-12-0-prod-longpolling-secure-0.tls: "true"
+      traefik.http.routers.myproject-odoo-12-0-prod-longpolling-secure-0.tls.certResolver: letsencrypt
+      traefik.http.routers.myproject-odoo-12-0-prod-forbiddenCrawlers-0.rule:
+        Host(`prod.docker.localhost`) && (PathPrefix(`/web/`, `/website/info/`) ||
+        Path(`/web`, `/website/info`))
+      traefik.http.routers.myproject-odoo-12-0-prod-forbiddenCrawlers-0.service: myproject-odoo-12-0-prod-main
+      traefik.http.routers.myproject-odoo-12-0-prod-forbiddenCrawlers-0.middlewares:
+        myproject-odoo-12-0-prod-buffering, myproject-odoo-12-0-prod-compress,
+        myproject-odoo-12-0-prod-forbid-crawlers, myproject-odoo-12-0-prod-forceSecure
+      traefik.http.routers.myproject-odoo-12-0-prod-forbiddenCrawlers-secure-0.rule:
+        Host(`prod.docker.localhost`) && (PathPrefix(`/web/`, `/website/info/`) ||
+        Path(`/web`, `/website/info`))
+      traefik.http.routers.myproject-odoo-12-0-prod-forbiddenCrawlers-secure-0.service: myproject-odoo-12-0-prod-main
+      ? traefik.http.routers.myproject-odoo-12-0-prod-forbiddenCrawlers-secure-0.middlewares
+      : myproject-odoo-12-0-prod-buffering, myproject-odoo-12-0-prod-compress,
+        myproject-odoo-12-0-prod-forbid-crawlers, myproject-odoo-12-0-prod-forceSecure
+      traefik.http.routers.myproject-odoo-12-0-prod-forbiddenCrawlers-secure-0.tls: "true"
+      traefik.http.routers.myproject-odoo-12-0-prod-forbiddenCrawlers-secure-0.tls.certResolver: letsencrypt
+
+  db:
+    extends:
+      file: common.yaml
+      service: db
+    env_file:
+      - .docker/db-creation.env
+    restart: unless-stopped
+
+networks:
+  default:
+    driver_opts:
+      encrypted: 1
+
+  inverseproxy_shared:
+    external: true
+
+volumes:
+  filestore:
+  db:
