@@ -1,0 +1,58 @@
+version: "2.1"
+
+services:
+  proxy:
+    image: docker.io/traefik:1.6-alpine
+    networks:
+      shared:
+      private:
+      public:
+    volumes:
+      - acme:/etc/traefik/acme:rw,Z
+    ports:
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:443:443"
+    depends_on:
+      - dockersocket
+    restart: unless-stopped
+    privileged: true
+    tty: true
+    command:
+      #     - "--log.level=DEBUG"
+      - "--api.insecure"
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.defaultRule=Host(`{{ trimPrefix `/` .Name
+        }}.${TRAEFIK_DEFAULT_DOMAIN}`)"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+  dockersocket:
+    image: tecnativa/docker-socket-proxy
+    privileged: true
+    networks:
+      private:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      CONTAINERS: 1
+      NETWORKS: 1
+      SERVICES: 1
+      SWARM: 1
+      TASKS: 1
+    restart: unless-stopped
+
+networks:
+  shared:
+    internal: true
+    driver_opts:
+      encrypted: 1
+
+  private:
+    internal: true
+    driver_opts:
+      encrypted: 1
+
+  public:
+
+volumes:
+  acme:

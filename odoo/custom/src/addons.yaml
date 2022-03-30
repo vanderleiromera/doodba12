@@ -1,0 +1,8 @@
+web:
+  - "*" # All web addons
+server-tools:
+  - "*"
+l10n-brazil:
+  - "*"
+account-payment:
+  - "*"
