@@ -1,6 +1,20 @@
 version: "2.4"
 
 services:
+  odoo_proxy:
+    image: ghcr.io/tecnativa/docker-whitelist:latest
+    depends_on:
+      - odoo
+    networks: &public
+      default:
+      public:
+    ports:
+      - "127.0.0.1:14899:6899"
+      - "127.0.0.1:14069:8069"
+    environment:
+      PORT: "6899 8069"
+      TARGET: odoo
+
   odoo:
     extends:
       file: common.yaml
@@ -20,47 +34,17 @@ services:
       - smtp
     networks:
       default:
-      globalwhitelist_shared:
-      inverseproxy_shared:
+    #    globalwhitelist_shared:
     labels:
-      doodba.domain.main: "test.docker.localhost"
-      traefik.enable: "true"
-      traefik.domain: "test.docker.localhost"
-      traefik.forbiddenCrawlers-0.frontend.headers.customResponseHeaders:
-        "X-Robots-Tag:noindex, nofollow"
-      traefik.forbiddenCrawlers-0.frontend.rule: Host:test.docker.localhost;Path:/{anything:.*}
-      traefik.longpolling-0.frontend.rule: Host:test.docker.localhost;Path:/longpolling/{anything:.*}
-      traefik.longpolling-0.port: 8072
-      traefik.http.services.myproject-odoo-12-0-test-main.loadbalancer.server.port: 8069
-      traefik.http.services.myproject-odoo-12-0-test-longpolling.loadbalancer.server.port: 8072
-      traefik.http.routers.myproject-odoo-12-0-test-longpolling-0.rule:
-        Host(`test.docker.localhost`) && PathPrefix(`/longpolling/`)
-      traefik.http.routers.myproject-odoo-12-0-test-longpolling-0.service: myproject-odoo-12-0-test-longpolling
-      traefik.http.routers.myproject-odoo-12-0-test-longpolling-0.middlewares: myproject-odoo-12-0-test-forceSecure
-      traefik.http.routers.myproject-odoo-12-0-test-longpolling-secure-0.rule:
-        Host(`test.docker.localhost`) && PathPrefix(`/longpolling/`)
-      traefik.http.routers.myproject-odoo-12-0-test-longpolling-secure-0.service: myproject-odoo-12-0-test-longpolling
-      traefik.http.routers.myproject-odoo-12-0-test-longpolling-secure-0.middlewares: myproject-odoo-12-0-test-forceSecure
-      traefik.http.routers.myproject-odoo-12-0-test-longpolling-secure-0.tls: "true"
-      traefik.http.routers.myproject-odoo-12-0-test-longpolling-secure-0.tls.certResolver: letsencrypt
-      traefik.http.routers.myproject-odoo-12-0-test-forbiddenCrawlers-0.rule:
-        Host(`test.docker.localhost`) && (PathPrefix(`/`))
-      traefik.http.routers.myproject-odoo-12-0-test-forbiddenCrawlers-0.service: myproject-odoo-12-0-test-main
-      traefik.http.routers.myproject-odoo-12-0-test-forbiddenCrawlers-0.middlewares:
-        myproject-odoo-12-0-test-buffering, myproject-odoo-12-0-test-compress,
-        myproject-odoo-12-0-test-forbid-crawlers, myproject-odoo-12-0-test-forceSecure
-      traefik.http.routers.myproject-odoo-12-0-test-forbiddenCrawlers-secure-0.rule:
-        Host(`test.docker.localhost`) && (PathPrefix(`/`))
-      traefik.http.routers.myproject-odoo-12-0-test-forbiddenCrawlers-secure-0.service: myproject-odoo-12-0-test-main
-      ? traefik.http.routers.myproject-odoo-12-0-test-forbiddenCrawlers-secure-0.middlewares
-      : myproject-odoo-12-0-test-buffering, myproject-odoo-12-0-test-compress,
-        myproject-odoo-12-0-test-forbid-crawlers, myproject-odoo-12-0-test-forceSecure
-      traefik.http.routers.myproject-odoo-12-0-test-forbiddenCrawlers-secure-0.tls: "true"
-      traefik.http.routers.myproject-odoo-12-0-test-forbiddenCrawlers-secure-0.tls.certResolver: letsencrypt
+      doodba.domain.main: ""
     command:
       - odoo
-      - --workers=2
-      - --max-cron-threads=1
+      #      - --workers=2
+      #      - --max-cron-threads=1
+      - --limit-memory-soft=0
+      - --limit-time-real-cron=9999999
+      - --limit-time-real=9999999
+      - --workers=0
 
   db:
     extends:
@@ -79,57 +63,97 @@ services:
       default:
         aliases:
           - smtplocal
-      inverseproxy_shared:
     labels:
-      doodba.domain.main: "test.docker.localhost"
-      traefik.docker.network: "inverseproxy_shared"
-      traefik.enable: "true"
-      traefik.frontend.passHostHeader: "true"
-      traefik.mailhog-0.frontend.rule: Host:test.docker.localhost;PathPrefixStrip:/smtpfake/
-      traefik.mailhog-0.port: 8025
-      # Mailhog service
-      traefik.http.middlewares.myproject-odoo-12-0-test-mailhog-stripprefix.stripPrefix.prefixes: /smtpfake/
-      traefik.http.services.myproject-odoo-12-0-test-mailhog.loadbalancer.server.port: 8025
-      ? traefik.http.middlewares.myproject-odoo-12-0-test-buffering.buffering.retryExpression
-      : IsNetworkError() && Attempts() < 5
-      traefik.http.middlewares.myproject-odoo-12-0-test-compress.compress: "true"
-      ? traefik.http.middlewares.myproject-odoo-12-0-test-forbid-crawlers.headers.customResponseHeaders.X-Robots-Tag
-      : "noindex, nofollow"
-      traefik.http.middlewares.myproject-odoo-12-0-test-forceSecure.headers.forceSTSHeader: "true"
-      traefik.http.middlewares.myproject-odoo-12-0-test-forceSecure.headers.sslRedirect: "true"
-      traefik.http.routers.myproject-odoo-12-0-test-mailhog-0.rule:
-        Host(`test.docker.localhost`) && PathPrefix(`/smtpfake/`)
-      traefik.http.routers.myproject-odoo-12-0-test-mailhog-0.service: myproject-odoo-12-0-test-mailhog
-      traefik.http.routers.myproject-odoo-12-0-test-mailhog-0.middlewares:
-        myproject-odoo-12-0-test-buffering, myproject-odoo-12-0-test-compress,
-        myproject-odoo-12-0-test-forbid-crawlers, myproject-odoo-12-0-test-forceSecure,
-        myproject-odoo-12-0-test-mailhog-stripprefix
-      traefik.http.routers.myproject-odoo-12-0-test-mailhog-secure-0.rule:
-        Host(`test.docker.localhost`) && PathPrefix(`/smtpfake/`)
-      traefik.http.routers.myproject-odoo-12-0-test-mailhog-secure-0.service: myproject-odoo-12-0-test-mailhog
-      traefik.http.routers.myproject-odoo-12-0-test-mailhog-secure-0.middlewares:
-        myproject-odoo-12-0-test-buffering, myproject-odoo-12-0-test-compress,
-        myproject-odoo-12-0-test-forbid-crawlers, myproject-odoo-12-0-test-forceSecure,
-        myproject-odoo-12-0-test-mailhog-stripprefix
-      traefik.http.routers.myproject-odoo-12-0-test-mailhog-secure-0.tls: "true"
-      traefik.http.routers.myproject-odoo-12-0-test-mailhog-secure-0.tls.certResolver: letsencrypt
+      doodba.domain.main: ""
     volumes:
       - "smtpconf:/etc/mailhog:ro,z"
     entrypoint: [sh, -c]
     command:
       - test -r /etc/mailhog/auth && export MH_AUTH_FILE=/etc/mailhog/auth; exec MailHog
 
+  #networks:
+  # default:
+  #  internal: ${DOODBA_NETWORK_INTERNAL-true}
+  #   driver_opts:
+  #    encrypted: 1
+
+  # globalwhitelist_shared:
+  #  external: true
+
+  #inverseproxy_shared:
+  # external: false
+
+  # Whitelist outgoing traffic for tests, reports, etc.
+  proxy_cdnjs_cloudflare_com:
+    image: ghcr.io/tecnativa/docker-whitelist:latest
+    networks:
+      default:
+        aliases:
+          - cdnjs.cloudflare.com
+      public:
+    environment:
+      TARGET: cdnjs.cloudflare.com
+      PRE_RESOLVE: 1
+
+  proxy_fonts_googleapis_com:
+    image: ghcr.io/tecnativa/docker-whitelist:latest
+    networks:
+      default:
+        aliases:
+          - fonts.googleapis.com
+      public:
+    environment:
+      TARGET: fonts.googleapis.com
+      PRE_RESOLVE: 1
+
+  proxy_fonts_gstatic_com:
+    image: ghcr.io/tecnativa/docker-whitelist:latest
+    networks:
+      default:
+        aliases:
+          - fonts.gstatic.com
+      public:
+    environment:
+      TARGET: fonts.gstatic.com
+      PRE_RESOLVE: 1
+
+  proxy_www_google_com:
+    image: ghcr.io/tecnativa/docker-whitelist:latest
+    networks:
+      default:
+        aliases:
+          - www.google.com
+      public:
+    environment:
+      TARGET: www.google.com
+      PRE_RESOLVE: 1
+
+  proxy_www_googleapis_com:
+    image: ghcr.io/tecnativa/docker-whitelist:latest
+    networks:
+      default:
+        aliases:
+          - www.googleapis.com
+      public:
+    environment:
+      TARGET: www.googleapis.com
+      PRE_RESOLVE: 1
+
+  proxy_www_gravatar_com:
+    image: ghcr.io/tecnativa/docker-whitelist:latest
+    networks:
+      default:
+        aliases:
+          - www.gravatar.com
+      public:
+    environment:
+      TARGET: www.gravatar.com
+      PRE_RESOLVE: 1
+
 networks:
   default:
     internal: ${DOODBA_NETWORK_INTERNAL-true}
-    driver_opts:
-      encrypted: 1
-
-  globalwhitelist_shared:
-    external: true
-
-  inverseproxy_shared:
-    external: true
+  public:
 
 volumes:
   filestore:
