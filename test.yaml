@@ -34,8 +34,7 @@ services:
       - smtp
     networks:
       default:
-      globalwhitelist_shared:
-      inverseproxy_shared:
+    #      globalwhitelist_shared:
     labels:
       doodba.domain.main: "test.docker.localhost"
       traefik.enable: "true"
@@ -97,7 +96,6 @@ services:
       default:
         aliases:
           - smtplocal
-      inverseproxy_shared:
     labels:
       doodba.domain.main: "test.docker.localhost"
       traefik.docker.network: "inverseproxy_shared"
