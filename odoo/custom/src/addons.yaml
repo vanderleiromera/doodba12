@@ -4,5 +4,7 @@ server-tools:
   - "*"
 l10n-brazil:
   - "*"
+account-reconcile:
+  - "*"
 account-payment:
   - "*"

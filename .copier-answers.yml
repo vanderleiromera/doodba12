@@ -8,12 +8,16 @@ backup_email_to: null
 backup_image_version: latest
 backup_tz: UTC
 cidr_whitelist: null
-domains_prod: null
-domains_test: null
+domains_prod:
+  - hosts:
+      - prod.docker.localhost
+domains_test:
+  - hosts:
+      - test.docker.localhost
 gitlab_url: null
 odoo_dbfilter: ^prod
 odoo_initial_lang: en_US
-odoo_listdb: false
+odoo_listdb: true
 odoo_oci_image: null
 odoo_proxy: traefik
 odoo_version: 14.0
