@@ -36,4 +36,4 @@ jobs:
           context: ./odoo
           file: ./odoo/Dockerfile
           platforms: linux/amd64
-          tags: vanderleiromera/doodba14:${{ steps.tagging.outputs.new_version }}
+          tags: vanderleiromera/doodba12:${{ steps.tagging.outputs.new_version }}
