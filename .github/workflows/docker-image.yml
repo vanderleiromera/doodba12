@@ -2,6 +2,11 @@ name: Docker Image CI
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      docker-ci:
+        description: "Image CI"
+        required: false
 
 jobs:
   build:
