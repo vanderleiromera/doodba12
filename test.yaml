@@ -50,25 +50,29 @@ services:
       traefik.http.routers.StillusOdoo-14-0-test-longpolling-0.rule:
         Host(`test.docker.localhost`) && PathPrefix(`/longpolling/`)
       traefik.http.routers.StillusOdoo-14-0-test-longpolling-0.service: StillusOdoo-14-0-test-longpolling
-      traefik.http.routers.StillusOdoo-14-0-test-longpolling-0.middlewares: StillusOdoo-14-0-test-forceSecure
+      traefik.http.routers.StillusOdoo-14-0-test-longpolling-0.middlewares:
+        StillusOdoo-14-0-test-addSTS, StillusOdoo-14-0-test-forceSecure
       traefik.http.routers.StillusOdoo-14-0-test-longpolling-secure-0.rule:
         Host(`test.docker.localhost`) && PathPrefix(`/longpolling/`)
       traefik.http.routers.StillusOdoo-14-0-test-longpolling-secure-0.service: StillusOdoo-14-0-test-longpolling
-      traefik.http.routers.StillusOdoo-14-0-test-longpolling-secure-0.middlewares: StillusOdoo-14-0-test-forceSecure
+      traefik.http.routers.StillusOdoo-14-0-test-longpolling-secure-0.middlewares:
+        StillusOdoo-14-0-test-addSTS, StillusOdoo-14-0-test-forceSecure
       traefik.http.routers.StillusOdoo-14-0-test-longpolling-secure-0.tls: "true"
       traefik.http.routers.StillusOdoo-14-0-test-longpolling-secure-0.tls.certResolver: letsencrypt
       traefik.http.routers.StillusOdoo-14-0-test-forbiddenCrawlers-0.rule:
         Host(`test.docker.localhost`) && (PathPrefix(`/`))
       traefik.http.routers.StillusOdoo-14-0-test-forbiddenCrawlers-0.service: StillusOdoo-14-0-test-main
       traefik.http.routers.StillusOdoo-14-0-test-forbiddenCrawlers-0.middlewares:
-        StillusOdoo-14-0-test-buffering, StillusOdoo-14-0-test-compress,
-        StillusOdoo-14-0-test-forbid-crawlers, StillusOdoo-14-0-test-forceSecure
+        StillusOdoo-14-0-test-addSTS, StillusOdoo-14-0-test-buffering,
+        StillusOdoo-14-0-test-compress, StillusOdoo-14-0-test-forbid-crawlers,
+        StillusOdoo-14-0-test-forceSecure
       traefik.http.routers.StillusOdoo-14-0-test-forbiddenCrawlers-secure-0.rule:
         Host(`test.docker.localhost`) && (PathPrefix(`/`))
       traefik.http.routers.StillusOdoo-14-0-test-forbiddenCrawlers-secure-0.service: StillusOdoo-14-0-test-main
       traefik.http.routers.StillusOdoo-14-0-test-forbiddenCrawlers-secure-0.middlewares:
-        StillusOdoo-14-0-test-buffering, StillusOdoo-14-0-test-compress,
-        StillusOdoo-14-0-test-forbid-crawlers, StillusOdoo-14-0-test-forceSecure
+        StillusOdoo-14-0-test-addSTS, StillusOdoo-14-0-test-buffering,
+        StillusOdoo-14-0-test-compress, StillusOdoo-14-0-test-forbid-crawlers,
+        StillusOdoo-14-0-test-forceSecure
       traefik.http.routers.StillusOdoo-14-0-test-forbiddenCrawlers-secure-0.tls: "true"
       traefik.http.routers.StillusOdoo-14-0-test-forbiddenCrawlers-secure-0.tls.certResolver: letsencrypt
     command:
@@ -113,22 +117,23 @@ services:
       traefik.http.middlewares.StillusOdoo-14-0-test-compress.compress: "true"
       ? traefik.http.middlewares.StillusOdoo-14-0-test-forbid-crawlers.headers.customResponseHeaders.X-Robots-Tag
       : "noindex, nofollow"
-      traefik.http.middlewares.StillusOdoo-14-0-test-forceSecure.headers.forceSTSHeader: "true"
-      traefik.http.middlewares.StillusOdoo-14-0-test-forceSecure.headers.sslRedirect: "true"
+      traefik.http.middlewares.StillusOdoo-14-0-test-addSTS.headers.forceSTSHeader: "true"
+      traefik.http.middlewares.StillusOdoo-14-0-test-forceSecure.redirectScheme.scheme: https
+      traefik.http.middlewares.StillusOdoo-14-0-test-forceSecure.redirectScheme.permanent: "true"
       traefik.http.routers.StillusOdoo-14-0-test-mailhog-0.rule:
         Host(`test.docker.localhost`) && PathPrefix(`/smtpfake/`)
       traefik.http.routers.StillusOdoo-14-0-test-mailhog-0.service: StillusOdoo-14-0-test-mailhog
       traefik.http.routers.StillusOdoo-14-0-test-mailhog-0.middlewares:
-        StillusOdoo-14-0-test-buffering, StillusOdoo-14-0-test-compress,
-        StillusOdoo-14-0-test-forbid-crawlers, StillusOdoo-14-0-test-forceSecure,
-        StillusOdoo-14-0-test-mailhog-stripprefix
+        StillusOdoo-14-0-test-addSTS, StillusOdoo-14-0-test-buffering,
+        StillusOdoo-14-0-test-compress, StillusOdoo-14-0-test-forbid-crawlers,
+        StillusOdoo-14-0-test-forceSecure, StillusOdoo-14-0-test-mailhog-stripprefix
       traefik.http.routers.StillusOdoo-14-0-test-mailhog-secure-0.rule:
         Host(`test.docker.localhost`) && PathPrefix(`/smtpfake/`)
       traefik.http.routers.StillusOdoo-14-0-test-mailhog-secure-0.service: StillusOdoo-14-0-test-mailhog
       traefik.http.routers.StillusOdoo-14-0-test-mailhog-secure-0.middlewares:
-        StillusOdoo-14-0-test-buffering, StillusOdoo-14-0-test-compress,
-        StillusOdoo-14-0-test-forbid-crawlers, StillusOdoo-14-0-test-forceSecure,
-        StillusOdoo-14-0-test-mailhog-stripprefix
+        StillusOdoo-14-0-test-addSTS, StillusOdoo-14-0-test-buffering,
+        StillusOdoo-14-0-test-compress, StillusOdoo-14-0-test-forbid-crawlers,
+        StillusOdoo-14-0-test-forceSecure, StillusOdoo-14-0-test-mailhog-stripprefix
       traefik.http.routers.StillusOdoo-14-0-test-mailhog-secure-0.tls: "true"
       traefik.http.routers.StillusOdoo-14-0-test-mailhog-secure-0.tls.certResolver: letsencrypt
     volumes:
