@@ -1,11 +1,11 @@
-name: Docker Image CI
+name: CI-14.0 Local
 on:
   push:
-    branches: [main]
+    branches: [14.0]
   workflow_dispatch:
     inputs:
       docker-ci:
-        description: "Image CI"
+        description: "14.0 Local"
         required: false
 
 jobs:
@@ -41,4 +41,4 @@ jobs:
           context: ./odoo
           file: ./odoo/Dockerfile
           platforms: linux/amd64
-          tags: vanderleiromera/doodba12:${{ steps.tagging.outputs.new_version }}
+          tags: vanderleiromera/doodba14:${{ steps.tagging.outputs.new_version }}
