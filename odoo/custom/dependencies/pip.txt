@@ -22,6 +22,7 @@ lxml==4.6.5
 -e git+https://github.com/OCA/openupgradelib.git@master#egg=openupgradelib
 vcrpy
 odoo-test-helper
+backports-datetime-fromisoformat
 
 # OCA Modules
 pysftp==0.2.8
