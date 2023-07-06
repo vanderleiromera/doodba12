@@ -3,20 +3,21 @@ unicodecsv
 unidecode
 
 # Localizacao Brasil
-num2words==0.5.4
-pycep-correios==5.0.0
-workalendar
-erpbrasil.base==2.2.2
 erpbrasil.assinatura
-erpbrasil.transmissao==1.0.0
-erpbrasil.edoc==2.2.1
-erpbrasil.edoc.pdf==1.0.2
-#nfselib.ginfes==0.2.0
-#nfselib.issnet==0.2.0
-#nfselib.paulistana==0.2.0
-#git+https://github.com/akretion/nfelib.git@master_gen_v4_00#egg=nfelib
-nfelib==1.2.0
-xmldiff==2.4
+erpbrasil.base
+erpbrasil.edoc
+erpbrasil.edoc.pdf
+erpbrasil.transmissao
+febraban
+nfelib
+nfselib.ginfes
+nfselib.issnet
+nfselib.paulistana
+num2words
+pycep_correios
+unidecode
+workalendar
+xmldiff
 lxml==4.6.5
 -e git+https://github.com/OCA/openupgradelib.git@master#egg=openupgradelib
 vcrpy
