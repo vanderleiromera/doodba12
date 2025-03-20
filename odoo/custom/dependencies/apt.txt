@@ -21,4 +21,4 @@ swig
 zlib1g-dev
 node-less
 nodejs
-nodejs-legacy
+#nodejs-legacy
